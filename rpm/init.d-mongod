@@ -45,7 +45,7 @@ fi
 
 start()
 {
-  echo -n $"Starting mongod: "
+  echo -n $"Starting talkdb: "
   daemon --user "$MONGO_USER" $NUMACTL $mongod $OPTIONS
   RETVAL=$?
   echo
@@ -54,7 +54,7 @@ start()
 
 stop()
 {
-  echo -n $"Stopping mongod: "
+  echo -n $"Stopping talkdb: "
   killproc -p "$PIDFILE" -d 300 /usr/bin/mongod
   RETVAL=$?
   echo
