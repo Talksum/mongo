@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# mongod - Startup script for mongod
+# talkdb - Startup script for talkdb
 
 # chkconfig: 35 85 15
 # description: Mongo is a scalable, document-oriented database.
@@ -26,8 +26,8 @@ DBPATH=`awk -F= '/^dbpath=/{print $2}' "$CONFIGFILE"`
 PIDFILE=`awk -F= '/^dbpath\s=\s/{print $2}' "$CONFIGFILE"`
 mongod=${MONGOD-/usr/bin/mongod}
 
-MONGO_USER=mongod
-MONGO_GROUP=mongod
+MONGO_USER=talkdb
+MONGO_GROUP=talkdb
 
 if [ -f "$SYSCONFIG" ]; then
     . "$SYSCONFIG"

@@ -1,9 +1,16 @@
-Name: mongo-10gen
+%define _prefix /usr
+# even though most macros are based on _prefix, /usr/lib/rpm/redhat/macros
+# specifically overwrites a couple which will screw us up, so we have to
+# explicitly define them here
+%define _libdir %{_prefix}/lib
+%define _mandir %{_prefix}/share/man
+
+Name: talkdb
 Conflicts: mongo, mongo-10gen-unstable
-Obsoletes: mongo-stable
+Obsoletes: mongo-stable, mongo-10gen
 Version: 2.1.2
-Release: mongodb_1%{?dist}
-Summary: mongodb client shell and tools
+Release: 1%{?dist}
+Summary: talkdb client shell and tools
 License: AGPL 3.0
 URL: http://www.mongodb.org
 Group: Applications/Databases
@@ -25,7 +32,7 @@ client utilities.
 %package server
 Summary: mongodb server, sharding server, and support scripts
 Group: Applications/Databases
-Requires: mongo
+Requires: talkdb
 Requires(pre): /usr/sbin/useradd
 Requires(pre): /usr/sbin/groupadd
 Requires(post): chkconfig
@@ -51,26 +58,28 @@ to develop mongo client software.
 %setup
 
 %build
-scons -%{?_smp_mflags} -prefix=$RPM_BUILD_ROOT/usr all
+# scons -%{?_smp_mflags} -prefix=$RPM_BUILD_ROOT/usr all
+scons -j 3 --prefix=$RPM_BUILD_ROOT/usr all
 # XXX really should have shared library here
 
 %install
 scons --prefix=$RPM_BUILD_ROOT/usr install
 mkdir -p $RPM_BUILD_ROOT/usr
-cp -rv BINARIES/usr/bin $RPM_BUILD_ROOT/usr
+# cp -rv BINARIES/usr/bin $RPM_BUILD_ROOT/usr
 mkdir -p $RPM_BUILD_ROOT/usr/share/man/man1
 cp debian/*.1 $RPM_BUILD_ROOT/usr/share/man/man1/
 # FIXME: remove this rm when mongosniff is back in the package
 rm -v $RPM_BUILD_ROOT/usr/share/man/man1/mongosniff.1*
 mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d
-cp -v rpm/init.d-mongod $RPM_BUILD_ROOT/etc/rc.d/init.d/mongod
-chmod a+x $RPM_BUILD_ROOT/etc/rc.d/init.d/mongod
+cp -v rpm/init.d-mongod $RPM_BUILD_ROOT/etc/rc.d/init.d/talkdb
+chmod a+x $RPM_BUILD_ROOT/etc/rc.d/init.d/talkdb
 mkdir -p $RPM_BUILD_ROOT/etc
 cp -v rpm/mongod.conf $RPM_BUILD_ROOT/etc/mongod.conf
 mkdir -p $RPM_BUILD_ROOT/etc/sysconfig
 cp -v rpm/mongod.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/mongod
 mkdir -p $RPM_BUILD_ROOT/var/lib/mongo
 mkdir -p $RPM_BUILD_ROOT/var/log/mongo
+mkdir -p $RPM_BUILD_ROOT/var/run/mongo
 touch $RPM_BUILD_ROOT/var/log/mongo/mongod.log
 
 %clean
@@ -78,30 +87,33 @@ scons -c
 rm -rf $RPM_BUILD_ROOT
 
 %pre server
-if ! /usr/bin/id -g mongod &>/dev/null; then
-    /usr/sbin/groupadd -r mongod
+if ! /usr/bin/id -g talkdb &>/dev/null; then
+    /usr/sbin/groupadd -r talkdb
 fi
-if ! /usr/bin/id mongod &>/dev/null; then
-    /usr/sbin/useradd -M -r -g mongod -d /var/lib/mongo -s /bin/false \
-	-c mongod mongod > /dev/null 2>&1
+if ! /usr/bin/id talkdb &>/dev/null; then
+    /usr/sbin/useradd -M -r -g talkdb -d /var/lib/mongo -s /bin/false \
+	-c talkdb talkdb > /dev/null 2>&1
 fi
 
 %post server
 if test $1 = 1
 then
-  /sbin/chkconfig --add mongod
+  /sbin/chkconfig --add talkdb
+  /sbin/service talkdb start >/dev/null 2>&1
+  /usr/bin/mongo admin --eval "db.auth('talkdb','talk310');db.addUser('talkdb','talk310')" \
+  >/dev/null 2>&1
 fi
 
 %preun server
 if test $1 = 0
 then
-  /sbin/chkconfig --del mongod
+  /sbin/chkconfig --del talkdb
 fi
 
 %postun server
 if test $1 -ge 1
 then
-  /sbin/service mongod condrestart >/dev/null 2>&1 || :
+  /sbin/service talkdb condrestart >/dev/null 2>&1 || :
 fi
 
 %files
@@ -114,7 +126,7 @@ fi
 %{_bindir}/mongofiles
 %{_bindir}/mongoimport
 %{_bindir}/mongorestore
-%{_bindir}/mongosniff
+# %{_bindir}/mongosniff
 %{_bindir}/mongostat
 %{_bindir}/bsondump
 %{_bindir}/mongotop
@@ -125,7 +137,7 @@ fi
 %{_mandir}/man1/mongoexport.1*
 %{_mandir}/man1/mongofiles.1*
 %{_mandir}/man1/mongoimport.1*
-%{_mandir}/man1/mongosniff.1*
+# %{_mandir}/man1/mongosniff.1*
 %{_mandir}/man1/mongostat.1*
 %{_mandir}/man1/mongorestore.1*
 %{_mandir}/man1/bsondump.1*
@@ -137,15 +149,25 @@ fi
 %{_bindir}/mongos
 #%{_mandir}/man1/mongod.1*
 %{_mandir}/man1/mongos.1*
-/etc/rc.d/init.d/mongod
+/etc/rc.d/init.d/talkdb
 %config(noreplace) /etc/sysconfig/mongod
 #/etc/rc.d/init.d/mongos
-%attr(0755,mongod,mongod) %dir /var/lib/mongo
-%attr(0755,mongod,mongod) %dir /var/log/mongo
-%attr(0755,mongod,mongod) %dir /var/run/mongo
-%attr(0640,mongod,mongod) %config(noreplace) %verify(not md5 size mtime) /var/log/mongo/mongod.log
+%attr(0755,talkdb,talkdb) %dir /var/lib/mongo
+%attr(0755,talkdb,talkdb) %dir /var/log/mongo
+%attr(0755,talkdb,talkdb) %dir /var/run/mongo
+%attr(0640,talkdb,talkdb) %config(noreplace) %verify(not md5 size mtime) /var/log/mongo/mongod.log
+
+%files devel
+%{_includedir}/mongo/*
+/usr/lib/libmongoclient.a
+%{_bindir}/mongooplog
+%{_bindir}/mongoperf
+
 
 %changelog
+* Fri Sep 14 2012 Shane Taylor <shanet@talksum.com> - 2.1.2-1
+- Changed to talkdb
+
 * Fri Feb 17 2012 Michael A. Fiedler <michael@10gen.com>
 - Added proper pid file usage
 
