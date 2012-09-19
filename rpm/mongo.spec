@@ -9,7 +9,7 @@ Name: talkdb
 Conflicts: mongo, mongo-10gen-unstable
 Obsoletes: mongo-stable, mongo-10gen
 Version: 2.1.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: talkdb client shell and tools
 License: AGPL 3.0
 URL: http://www.mongodb.org
@@ -74,13 +74,13 @@ mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d
 cp -v rpm/init.d-mongod $RPM_BUILD_ROOT/etc/rc.d/init.d/talkdb
 chmod a+x $RPM_BUILD_ROOT/etc/rc.d/init.d/talkdb
 mkdir -p $RPM_BUILD_ROOT/etc
-cp -v rpm/mongod.conf $RPM_BUILD_ROOT/etc/mongod.conf
+cp -v rpm/mongod.conf $RPM_BUILD_ROOT/etc/talkdb.conf
 mkdir -p $RPM_BUILD_ROOT/etc/sysconfig
-cp -v rpm/mongod.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/mongod
-mkdir -p $RPM_BUILD_ROOT/var/lib/mongo
-mkdir -p $RPM_BUILD_ROOT/var/log/mongo
-mkdir -p $RPM_BUILD_ROOT/var/run/mongo
-touch $RPM_BUILD_ROOT/var/log/mongo/mongod.log
+cp -v rpm/mongod.sysconfig $RPM_BUILD_ROOT/etc/sysconfig/talkdb
+mkdir -p $RPM_BUILD_ROOT/var/lib/talkdb
+mkdir -p $RPM_BUILD_ROOT/var/log/talkdb
+mkdir -p $RPM_BUILD_ROOT/var/run/talkdb
+touch $RPM_BUILD_ROOT/var/log/talkdb/talkdb.log
 
 %clean
 scons -c
@@ -144,18 +144,18 @@ fi
 
 %files server
 %defattr(-,root,root,-)
-%config(noreplace) /etc/mongod.conf
+%config(noreplace) /etc/talkdb.conf
 %{_bindir}/mongod
 %{_bindir}/mongos
 #%{_mandir}/man1/mongod.1*
 %{_mandir}/man1/mongos.1*
 /etc/rc.d/init.d/talkdb
-%config(noreplace) /etc/sysconfig/mongod
+%config(noreplace) /etc/sysconfig/talkdb
 #/etc/rc.d/init.d/mongos
-%attr(0755,talkdb,talkdb) %dir /var/lib/mongo
-%attr(0755,talkdb,talkdb) %dir /var/log/mongo
-%attr(0755,talkdb,talkdb) %dir /var/run/mongo
-%attr(0640,talkdb,talkdb) %config(noreplace) %verify(not md5 size mtime) /var/log/mongo/mongod.log
+%attr(0755,talkdb,talkdb) %dir /var/lib/talkdb
+%attr(0755,talkdb,talkdb) %dir /var/log/talkdb
+%attr(0755,talkdb,talkdb) %dir /var/run/talkdb
+%attr(0640,talkdb,talkdb) %config(noreplace) %verify(not md5 size mtime) /var/log/talkdb/talkdb.log
 
 %files devel
 %{_includedir}/mongo/*
@@ -165,6 +165,9 @@ fi
 
 
 %changelog
+* Fri Sep 19 2012 Shane Taylor <shanet@talksum.com> - 2.1.2-2
+- Changed more dirs and filenames to talkdb
+
 * Fri Sep 14 2012 Shane Taylor <shanet@talksum.com> - 2.1.2-1
 - Changed to talkdb
 

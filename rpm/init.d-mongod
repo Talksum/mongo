@@ -5,19 +5,19 @@
 # chkconfig: 35 85 15
 # description: Mongo is a scalable, document-oriented database.
 # processname: mongod
-# config: /etc/mongod.conf
-# pidfile: /var/run/mongo/mongod.pid
+# config: /etc/talkdb.conf
+# pidfile: /var/run/talkdb/talkdb.pid
 
 . /etc/rc.d/init.d/functions
 
-# things from mongod.conf get there by mongod reading it
+# things from talkdb.conf get there by mongod reading it
 
 
 # NOTE: if you change any OPTIONS here, you get what you pay for:
 # this script assumes all options are in the config file.
-CONFIGFILE="/etc/mongod.conf"
+CONFIGFILE="/etc/talkdb.conf"
 OPTIONS=" -f $CONFIGFILE"
-SYSCONFIG="/etc/sysconfig/mongod"
+SYSCONFIG="/etc/sysconfig/talkdb"
 
 # FIXME: 1.9.x has a --shutdown flag that parses the config file and
 # shuts down the correct running pid, but that's unavailable in 1.8
@@ -49,7 +49,7 @@ start()
   daemon --user "$MONGO_USER" $NUMACTL $mongod $OPTIONS
   RETVAL=$?
   echo
-  [ $RETVAL -eq 0 ] && touch /var/lock/subsys/mongod
+  [ $RETVAL -eq 0 ] && touch /var/lock/subsys/talkdb
 }
 
 stop()
@@ -58,7 +58,7 @@ stop()
   killproc -p "$PIDFILE" -d 300 /usr/bin/mongod
   RETVAL=$?
   echo
-  [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/mongod
+  [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/talkdb
 }
 
 restart () {
@@ -80,7 +80,7 @@ case "$1" in
     restart
     ;;
   condrestart)
-    [ -f /var/lock/subsys/mongod ] && restart || :
+    [ -f /var/lock/subsys/talkdb ] && restart || :
     ;;
   status)
     status $mongod
