@@ -1,4 +1,4 @@
-%define _prefix /usr
+%define _prefix /usr/local
 # even though most macros are based on _prefix, /usr/lib/rpm/redhat/macros
 # specifically overwrites a couple which will screw us up, so we have to
 # explicitly define them here
@@ -6,10 +6,8 @@
 %define _mandir %{_prefix}/share/man
 
 Name: talkdb
-Conflicts: mongo, mongo-10gen-unstable
-Obsoletes: mongo-stable, mongo-10gen
 Version: 2.1.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: talkdb client shell and tools
 License: AGPL 3.0
 URL: http://www.mongodb.org
@@ -58,18 +56,18 @@ to develop mongo client software.
 %setup
 
 %build
-# scons -%{?_smp_mflags} -prefix=$RPM_BUILD_ROOT/usr all
-scons -j 3 --prefix=$RPM_BUILD_ROOT/usr all
+# scons -%{?_smp_mflags} -prefix=$RPM_BUILD_ROOT%{_prefix} all
+scons -j 3 --prefix=$RPM_BUILD_ROOT%{_prefix} all
 # XXX really should have shared library here
 
 %install
-scons --prefix=$RPM_BUILD_ROOT/usr install
-mkdir -p $RPM_BUILD_ROOT/usr
+scons --prefix=$RPM_BUILD_ROOT%{_prefix} install
+mkdir -p $RPM_BUILD_ROOT%{_prefix}
 # cp -rv BINARIES/usr/bin $RPM_BUILD_ROOT/usr
-mkdir -p $RPM_BUILD_ROOT/usr/share/man/man1
-cp debian/*.1 $RPM_BUILD_ROOT/usr/share/man/man1/
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
+cp debian/*.1 $RPM_BUILD_ROOT%{_mandir}/man1/
 # FIXME: remove this rm when mongosniff is back in the package
-rm -v $RPM_BUILD_ROOT/usr/share/man/man1/mongosniff.1*
+rm -v $RPM_BUILD_ROOT%{_mandir}/man1/mongosniff.1*
 mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d
 cp -v rpm/init.d-mongod $RPM_BUILD_ROOT/etc/rc.d/init.d/talkdb
 chmod a+x $RPM_BUILD_ROOT/etc/rc.d/init.d/talkdb
@@ -100,7 +98,7 @@ if test $1 = 1
 then
   /sbin/chkconfig --add talkdb
   /sbin/service talkdb start >/dev/null 2>&1
-  /usr/bin/mongo admin --eval "db.auth('talkdb','talk310');db.addUser('talkdb','talk310')" \
+  %{_bindir}/mongo admin --eval "db.auth('talkdb','talk310');db.addUser('talkdb','talk310')" \
   >/dev/null 2>&1
 fi
 
@@ -159,12 +157,15 @@ fi
 
 %files devel
 %{_includedir}/mongo/*
-/usr/lib/libmongoclient.a
+%{_libdir}/libmongoclient.a
 %{_bindir}/mongooplog
 %{_bindir}/mongoperf
 
 
 %changelog
+* Fri Sep 19 2012 Shane Taylor <shanet@talksum.com> - 2.1.2-3
+- Changed to usr/local
+
 * Fri Sep 19 2012 Shane Taylor <shanet@talksum.com> - 2.1.2-2
 - Changed more dirs and filenames to talkdb
 
