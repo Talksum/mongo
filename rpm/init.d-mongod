@@ -24,7 +24,7 @@ SYSCONFIG="/etc/sysconfig/talkdb"
 # for now.  This can go away when this script stops supporting 1.8.
 DBPATH=`awk -F= '/^dbpath=/{print $2}' "$CONFIGFILE"`
 PIDFILE=`awk -F= '/^dbpath\s=\s/{print $2}' "$CONFIGFILE"`
-mongod=${MONGOD-/usr/bin/mongod}
+mongod=${TALKDB-/usr/local/bin/talkdb}
 
 MONGO_USER=talkdb
 MONGO_GROUP=talkdb
@@ -55,7 +55,7 @@ start()
 stop()
 {
   echo -n $"Stopping talkdb: "
-  killproc -p "$PIDFILE" -d 300 /usr/bin/mongod
+  killproc -p "$PIDFILE" -d 300 /usr/local/bin/talkdb
   RETVAL=$?
   echo
   [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/talkdb

@@ -79,6 +79,7 @@ mkdir -p $RPM_BUILD_ROOT/var/lib/talkdb
 mkdir -p $RPM_BUILD_ROOT/var/log/talkdb
 mkdir -p $RPM_BUILD_ROOT/var/run/talkdb
 touch $RPM_BUILD_ROOT/var/log/talkdb/talkdb.log
+cp -v $RPM_BUILD_ROOT%{_bindir}/mongod $RPM_BUILD_ROOT%{_bindir}/talkdb
 
 %clean
 scons -c
@@ -98,7 +99,7 @@ if test $1 = 1
 then
   /sbin/chkconfig --add talkdb
   /sbin/service talkdb start >/dev/null 2>&1
-  %{_bindir}/mongo admin --eval "db.auth('talkdb','talk310');db.addUser('talkdb','talk310')" \
+  %{_bindir}/mongo admin --port=27018 --eval "db.auth('talkdb','talk310');db.addUser('talkdb','talk310')" \
   >/dev/null 2>&1
 fi
 
@@ -144,6 +145,7 @@ fi
 %defattr(-,root,root,-)
 %config(noreplace) /etc/talkdb.conf
 %{_bindir}/mongod
+%{_bindir}/talkdb
 %{_bindir}/mongos
 #%{_mandir}/man1/mongod.1*
 %{_mandir}/man1/mongos.1*
